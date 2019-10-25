@@ -230,3 +230,4 @@ if __name__ == '__main__':
         reply = deviceUploadFile(args.upload)
         
         print("Reset board to run user code...")
+        deviceHardReset() #reset device
