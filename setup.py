@@ -22,7 +22,7 @@ setup(
         "pyserial>=3.0",
         "argparse",
         "pyprind",
-        "xmodem"，
+        "xmodem",
     ]          
 )
 
