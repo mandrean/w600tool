@@ -176,7 +176,7 @@ def main():
     parser.add_argument('--set-mac',      metavar='MAC')
     parser.add_argument('--erase', '-e',  action="store_true")
     parser.add_argument('--upload', '-u', metavar='FILE')
-    parser.add_argument('--upload-baud',  default=1000000, type=int, choices=supportedBauds)
+    parser.add_argument('--upload-baud',  default=2000000, type=int, choices=supportedBauds)
     parser.add_argument('--version',      action='version', version='%(prog)s '+ __version__)
     args = parser.parse_args()
 
