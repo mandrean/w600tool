@@ -84,9 +84,9 @@ def deviceSetBaud(self,baud):
         time.sleep(0.1)
 
     for retry in range(3):
-        serialSetBaud(prev_baud)
+        serialSetBaud(self,prev_baud)
         sendCommand(self,struct.pack('<II', CMD_SET_BAUD, baud))
-        serialSetBaud(baud)
+        serialSetBaud(self,baud)
         if deviceWaitBoot(self):
             return True
           
