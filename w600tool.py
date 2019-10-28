@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+from __future__ import division, print_function
+
 import serial
 import os
 import sys
@@ -10,7 +12,7 @@ import argparse
 import pyprind
 from xmodem import XMODEM1k
 
-__version__ = "1.0.0"
+__version__ = "0.0.1"
 
 CMD_SET_BAUD = 0x31
 CMD_ERASE    = 0x32 # ROM boot only
@@ -43,109 +45,109 @@ def error_exit(msg):
     print('Error:', msg)
     sys.exit(1)
 
-ser = None
+# ser = None
 
-def deviceHardReset():
-    ser.setRTS(True)
+def deviceHardReset(self):
+    self.setRTS(True)
     time.sleep(0.1)
-    ser.setRTS(False)
+    self.setRTS(False)
 
-def deviceWaitBoot(timeout = 3):
-    ser.timeout = 0.01
-    ser.flushInput()
+def deviceWaitBoot(self,timeout = 3):
+    self.timeout = 0.01
+    self.flushInput()
     started = time.time()
     buff = b''
     while time.time() - started < timeout:
-        ser.write(b'\x1B')
-        buff = buff + ser.read(1)
+        self.write(b'\x1B')
+        buff = buff + self.read(1)
         buff = buff[-16:]            # Remember last 16 chars
         if buff.endswith(b'CCCC'):
             return True
     return False
 
-def sendCommand(cmd):
+def sendCommand(self,cmd):
     cmd = struct.pack('<BHH', 0x21, len(cmd)+2, crc16(cmd)) + cmd
-    ser.flushInput()
-    ser.write(cmd)
-    ser.flush()
+    self.flushInput()
+    self.write(cmd)
+    self.flush()
     #print('<<< ', cmd.hex())
 
-def deviceSetBaud(baud):
-    prev_baud = ser.baudrate
+def deviceSetBaud(self,baud):
+    prev_baud = self.baudrate
     
-    def serialSetBaud(value):
-        if ser.baudrate == value:
+    def serialSetBaud(self,value):
+        if self.baudrate == value:
             return
-        ser.close()
-        ser.baudrate = value
-        ser.open()
+        self.close()
+        self.baudrate = value
+        self.open()
         time.sleep(0.1)
 
     for retry in range(3):
         serialSetBaud(prev_baud)
-        sendCommand(struct.pack('<II', CMD_SET_BAUD, baud))
+        sendCommand(self,struct.pack('<II', CMD_SET_BAUD, baud))
         serialSetBaud(baud)
-        if deviceWaitBoot():
+        if deviceWaitBoot(self):
             return True
           
-    serialSetBaud(prev_baud)
+    serialSetBaud(self,prev_baud)
     return False
 
-def deviceEraseImage():
-    ser.timeout = 1
-    sendCommand(struct.pack('<I', CMD_ERASE))
-    return deviceWaitBoot(5)
+def deviceEraseImage(self):
+    self.timeout = 1
+    sendCommand(self,struct.pack('<I', CMD_ERASE))
+    return deviceWaitBoot(self,5)
 
-def deviceEraseSecboot():
-    ser.timeout = 1
-    sendCommand(struct.pack('<I', CMD_ERASE_SECBOOT))
-    deviceWaitBoot(15)
-    return deviceIsInRomBoot()
+def deviceEraseSecboot(self):
+    self.timeout = 1
+    sendCommand(self,struct.pack('<I', CMD_ERASE_SECBOOT))
+    deviceWaitBoot(self,15)
+    return deviceIsInRomBoot(self)
 
-def deviceIsInRomBoot():
-    return (deviceGetFlashID() != None)
+def deviceIsInRomBoot(self):
+    return (deviceGetFlashID(self) != None)
 
-def deviceSetMAC(mac):
-    ser.timeout = 1
-    sendCommand(struct.pack('<I', CMD_SET_MAC) + mac)
+def deviceSetMAC(self,mac):
+    self.timeout = 1
+    sendCommand(self,struct.pack('<I', CMD_SET_MAC) + mac)
 
-def deviceGetMAC():
-    ser.timeout = 1
-    sendCommand(struct.pack('<I', CMD_GET_MAC))
-    result = ser.read_until(b'\n')
+def deviceGetMAC(self):
+    self.timeout = 1
+    sendCommand(self,struct.pack('<I', CMD_GET_MAC))
+    result = self.read_until(b'\n')
     result = result.decode('ascii').upper().strip()
     if result.startswith('MAC:'):
         return result[4:]
     return None
 
-def deviceGetFlashID():
-    ser.timeout = 1
-    sendCommand(struct.pack('<I', CMD_GET_QFID))
-    result = ser.read_until(b'\n')
+def deviceGetFlashID(self):
+    self.timeout = 1
+    sendCommand(self,struct.pack('<I', CMD_GET_QFID))
+    result = self.read_until(b'\n')
     result = result.decode('ascii').upper().strip()
     if result.startswith('FID:'):
         return result[4:]
     return None
 
-def deviceUploadFile(fn):
-    ser.timeout = 1
+def deviceUploadFile(self,fn):
+    self.timeout = 1
     statinfo_bin = os.stat(fn)
     bar = pyprind.ProgBar(statinfo_bin.st_size//1024)
 
     def ser_write(data, timeout=1):
         bar.update()
-        return ser.write(data)
+        return self.write(data)
 
     def ser_read(size, timeout=1):
-        return ser.read(size)
+        return self.read(size)
 
     stream = open(fn, 'rb+')
     time.sleep(0.2)
     modem = XMODEM1k(ser_read, ser_write)
-    ser.flushInput()
+    self.flushInput()
     if modem.send(stream):
         time.sleep(1)
-        reply = ser.read_until(b'run user code...')
+        reply = self.read_until(b'run user code...')
         reply = reply.decode('ascii').strip()
         return reply
 
@@ -163,7 +165,8 @@ def getDefaultPort():
     else:
         return "/dev/ttyUSB0"
 
-if __name__ == '__main__':
+def main():
+
     supportedBauds = [115200, 460800, 921600, 1000000, 2000000]
 
     parser = argparse.ArgumentParser(prog='w600tool')
@@ -180,29 +183,29 @@ if __name__ == '__main__':
     print('Opening device:', args.port)
     ser = serial.Serial(args.port, args.baud, timeout=1)
 
-    deviceHardReset()
-    if not deviceWaitBoot():
+    deviceHardReset(ser)
+    if not deviceWaitBoot(ser):
         print('Push reset button to enter bootloader...')
-        if not deviceWaitBoot(15):
+        if not deviceWaitBoot(ser,15):
             error_exit('Bootloader not responding')
 
     if args.set_mac:
         mac = args.set_mac.replace(':','').replace(' ','').upper()
         print('Setting MAC:', mac)
-        deviceSetMAC(bytearray.fromhex(mac))
+        deviceSetMAC(ser,bytearray.fromhex(mac))
 
     if args.get_mac:
-        mac = deviceGetMAC()
+        mac = deviceGetMAC(ser)
         print('MAC:', mac)
 
     if args.erase:
         print('Erasing secboot')
-        if not deviceEraseSecboot():
+        if not deviceEraseSecboot(ser):
             error_exit('Erasing secboot failed')
 
         print('Erasing image')
-        deviceEraseImage()
-        deviceWaitBoot(5)
+        deviceEraseImage(ser)
+        deviceWaitBoot(ser,5)
 
     if args.upload:
         if not os.path.exists(args.upload):
@@ -213,21 +216,32 @@ if __name__ == '__main__':
 
         if ext == '.fls' and not args.erase:
             print('Erasing secboot')
-            if not deviceEraseSecboot():
+            if not deviceEraseSecboot(ser):
                 error_exit('Erasing secboot failed => Try entering ROM boot manually')
-        elif ext == '.img' and deviceIsInRomBoot():
+        elif ext == '.img' and deviceIsInRomBoot(ser):
             error_exit('ROM bootloader only accepts FLS files')
 
         if args.upload_baud != ser.baudrate:
-            if deviceSetBaud(args.upload_baud):
+            if deviceSetBaud(ser,args.upload_baud):
                 print('Switched speed to', ser.baudrate)
             else:
                 print('Warning: Cannot switch speed')
-                if not deviceWaitBoot(5):
+                if not deviceWaitBoot(ser,5):
                     error_exit('Could not recover from speed switch failure => Try again, or set upload-baud to 115200')
 
         print('Uploading', args.upload)
-        reply = deviceUploadFile(args.upload)
+        reply = deviceUploadFile(ser,args.upload)
         
         print("Reset board to run user code...")
-        deviceHardReset() #reset device
+        deviceHardReset(ser) #reset device
+
+
+def _main():
+    main()
+
+
+if __name__ == '__main__':
+    _main()
+
+
+

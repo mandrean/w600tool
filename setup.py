@@ -1,21 +1,57 @@
 #!/usr/bin/env python
 #-*- coding:utf-8 -*-
 
+from __future__ import division, print_function
 
-from setuptools import setup, find_packages          
+import io
+import os
+import re
+
+from setuptools import setup         
+
+# Example code to pull version from esptool.py with regex, taken from
+# http://python-packaging-user-guide.readthedocs.org/en/latest/single_source_version/
+def read(*names, **kwargs):
+    with io.open(
+            os.path.join(os.path.dirname(__file__), *names),
+            encoding=kwargs.get("encoding", "utf8")
+    ) as fp:
+        return fp.read()
+
+
+def find_version(*file_paths):
+    version_file = read(*file_paths)
+    version_match = re.search(r"^__version__ = ['\"]([^'\"]*)['\"]",
+                              version_file, re.M)
+    if version_match:
+        return version_match.group(1)
+    raise RuntimeError("Unable to find version string.")
+
+if os.name == "nt":
+    scripts = None
+    entry_points = {
+        'console_scripts': [
+            'w600tool.py=w600tool:_main',
+
+        ],
+    }
+else:
+    scripts = ['w600tool.py',
+    ]
+    entry_points = None
 
 setup(
-    name = "w600tool",      
-    version = "1.0.0",  
-    keywords = ("pip", "SICA","featureextraction"),
-    description = "An feature extraction algorithm",
-    long_description = "An feature extraction algorithm, improve the FastICA",
+    name = "w600tool",
+    py_modules=['w600tool'],      
+    version = find_version('w600tool.py'),  
+    keywords = ("w600","w600tool"),
+    description = "A Firmware upload tool for Winner Micro W600 & W601 WiFim",
+    long_description = "A Firmware upload tool for Winner Micro W600 & W601 WiFi.",
 
     url = "https://github.com/wemos/w600tool",    
     author = "wemos",
     author_email = "support@wemos.cc",
 
-    packages = find_packages(),
     include_package_data = True,
     platforms = "any",
     install_requires = [
@@ -23,6 +59,9 @@ setup(
         "argparse",
         "pyprind",
         "xmodem",
-    ]          
+    ],
+
+    scripts=scripts,
+    entry_points=entry_points,          
 )
 
