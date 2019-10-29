@@ -40,16 +40,17 @@ optional arguments:
   --set-mac MAC
   -e, --erase
   -u FILE, --upload FILE
-  --upload-baud {115200,460800,921600,1000000,2000000}
+  --upload-baud {115200,460800,921600,1000000,2000000}, default 2000000 
 ```
 
 ## Example
 ```log
-$ w600tool.py --upload W60X_MicroPython_1.10_B1.1_GZ.fls
-Push reset button to enter bootloader...
+$ w600tool.py -p COM5 -u W60X_MicroPython_1.10_B1.1_GZ.fls
+Opening device: COM5
+Erasing secboot
 Switched speed to 2000000
 Uploading W60X_MicroPython_1.10_B1.1_GZ.fls
 0% [##############################] 100% | ETA: 00:00:00
-Total time elapsed: 00:00:09
+Total time elapsed: 00:00:012
 Reset board to run user code...
 ```
