@@ -9,7 +9,24 @@ import re
 
 from setuptools import setup         
 
-# Example code to pull version from esptool.py with regex, taken from
+
+long_description = """
+============
+w600tool.py
+============
+
+A Python-based firmware upload tool for Winner Micro W600 & W601 WiFi Chips.
+
+Usage
+--------
+
+Please see the `Usage section of the README.md file <https://github.com/wemos/w600tool#usage>`_.
+
+You can also get help information by running `w600tool.py --help`.
+
+"""
+
+
 # http://python-packaging-user-guide.readthedocs.org/en/latest/single_source_version/
 def read(*names, **kwargs):
     with io.open(
@@ -46,7 +63,7 @@ setup(
     version = find_version('w600tool.py'),  
     keywords = ("w600","w600tool"),
     description = "A Firmware upload tool for Winner Micro W600 & W601 WiFim",
-    long_description = "A Firmware upload tool for Winner Micro W600 & W601 WiFi.",
+    long_description = long_description,
 
     url = "https://github.com/wemos/w600tool",    
     author = "wemos",

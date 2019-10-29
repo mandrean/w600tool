@@ -1,7 +1,7 @@
 # w600tool
 A Python-based firmware upload tool for Winner Micro W600 & W601 WiFi Chips.
 
-w600tool.py was started by vshymanskyy (@[vshymanskyy](https://github.com/vshymanskyy/).
+w600tool.py was started by vshymanskyy (@[vshymanskyy](https://github.com/vshymanskyy/)).
 
 ## Features
 - Automatically detects bootloader or helps entering `secboot`
